@@ -93,19 +93,42 @@ class DeleteJob(Job):
                 time.sleep(wait)
 
 
+# Helpers
+
+def _create_connection(**config):
+    "Given a configuration, return an s3 connection."
+    aws_key, aws_secret_key = config.get('aws_key'), config.get('aws_secret_key')
+    conn = boto.connect_s3(aws_key, aws_secret_key)
+    return conn
+
 # Singlethreaded methods
+# TODO: Move these to a separate module?
+# TODO: Remove the toolbox_factory parameter, use _create_connection for everything instead?
+
+def show_buckets(**config):
+    """
+    List all the buckets in the account.
+    """
+    conn = _create_connection(**config)
+    log.info("Listing buckets.")
+    r = conn.get_all_buckets()
+    for b in r:
+        print b.name
 
 def list_bucket(toolbox_factory, **config):
     """
+    If no bucket is given, redirect call to ``show_buckets``. Otherwise:
     List all the keys in the bucket created by ``toolbox_factory``.
     Optionally, ``config`` may contain start_key which is used for the start
     marker for the list operation.
     """
+    if not config.get('bucket'):
+        return show_buckets(**config)
     toolbox = toolbox_factory()
     marker = config.get('start_key')
     more_results = True
     k = None
-    log.info("Starting to list from marker: %s" % marker)
+    log.info("Listing keys from marker: %s" % marker)
     while more_results:
         try:
             r = toolbox.bucket.get_all_keys(marker=marker)
@@ -128,8 +151,7 @@ def create_bucket(toolbox_factory, **config):
     Create a bucket named ``config['bucket']``.
     """
     name = config['bucket']
-    aws_key, aws_secret_key = config.get('aws_key'), config.get('aws_secret_key')
-    conn = boto.connect_s3(aws_key, aws_secret_key)
+    conn = _create_connection(**config)
     try:
         b = conn.create_bucket(name)
         log.info("Created bucket: %s" % name)

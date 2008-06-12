@@ -16,7 +16,7 @@ Key Operations:
 Bucket Operations:
     CREATE Create a new bucket
     DROP   Delete an existing bucket (must be empty)
-    LIST   List keys in the bucket
+    LIST   List keys in the bucket. If no bucket is given, buckets will be listed.
 """
 
 """
@@ -96,8 +96,14 @@ def main():
         parser.error("BUCKET not specified")
     bucket = args[0]
     if len(args) < 2:
-        parser.error("OPERATION not specified")
-    operation = args[1].lower()
+        # Exception for single-argument operations
+        if bucket.lower() in ['list']:
+            operation = bucket.lower()
+            bucket = None
+        else:
+            parser.error("OPERATION not specified")
+    else:
+        operation = args[1].lower()
 
     # Setup factories
     def toolbox_factory():
