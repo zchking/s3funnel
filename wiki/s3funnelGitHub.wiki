@@ -2,7 +2,7 @@ The source code for the s3funnel project is now managed on [http://github.com Gi
 
 http://github.com/sstoiana/s3funnel
 
-You can still access the GitHub repository using Subversion tools. See:
+You can still access the !GitHub repository using Subversion tools. See:
 
 http://github.com/blog/626-announcing-svn-support
 
